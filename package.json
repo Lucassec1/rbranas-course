@@ -1,0 +1,19 @@
+{
+  "name": "rbranas-course",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lucassec1/rbranas-course.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Lucassec1/rbranas-course/issues"
+  },
+  "homepage": "https://github.com/Lucassec1/rbranas-course#readme"
+}

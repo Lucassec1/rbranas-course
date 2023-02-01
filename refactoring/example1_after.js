@@ -11,8 +11,6 @@ const isSunday = function (date) {
 }
 
 export function calculateRide (distance, date) {
-    // if (typeof distance !== number || distance < 0) throw new Error("Invalid parameter distance");
-    // if (!(date instanceof Date)) throw new Error("Invalid parameter date");
     if (isOvernight(date)) return distance * OVERNIGHT_RATE;
     if (isSunday(date)) return distance * SUNDAY_RATE;
     return distance * NORMAL_RATE;
