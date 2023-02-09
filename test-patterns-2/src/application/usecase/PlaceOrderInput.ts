@@ -6,6 +6,4 @@ export default class PlaceOrderInput {
         readonly date: Date,
         readonly coupon?: string
     ) {}
-
-
 }

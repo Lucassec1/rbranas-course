@@ -1,4 +1,5 @@
 import Order from "../../domain/entity/Order";
+import CouponRepository from "../../domain/repository/CouponRepository";
 import ItemRepository from "../../domain/repository/ItemRepository";
 import OrderRepository from "../../domain/repository/OrderRepository";
 import PlaceOrderInput from "./PlaceOrderInput";
@@ -20,7 +21,8 @@ export default class PlaceOrder {
             order.addItem(item, orderItem.quantity);
         }
         if (input.coupon) {
-            order.addCoupon()
+            const coupon = await this.couponRepository.findByCode(input.coupon);
+            if (coupon) order.addCoupon(coupon);
         }
         await this.orderRepository.save(order);
         const total = order.getTotal();
