@@ -1,4 +1,6 @@
 import PlaceOrder from "../../src/application/usecase/PlaceOrder";
+import PgPromisseConnectionAdapter from "../../src/infra/database/PgPromisseConnectionAdapter";
+import ItemRepositoryDatabase from "../../src/infra/repository/database/itemRepositoryDatabase";
 import CouponRepositoryMemory from "../../src/infra/repository/memory/CouponRepositoryMemory";
 import ItemRepositoryMemory from "../../src/infra/repository/memory/ItemRepositoryMemory";
 import OrderRepositoryMemory from "../../src/infra/repository/memory/OrderRepositoryMemory";
@@ -23,7 +25,8 @@ test("Deve fazer um pedido", async function () {
 });
 
 test("Deve fazer um pedido com cálculo de frete", async function () {
-    const itemRepository = new ItemRepositoryMemory();
+    const connection = new PgPromisseConnectionAdapter();
+    const itemRepository = new ItemRepositoryDatabase(connection);
     const orderRepository = new OrderRepositoryMemory();
     const couponRepository = new CouponRepositoryMemory();
     const placeOrder = new PlaceOrder(itemRepository, orderRepository, couponRepository);
@@ -38,4 +41,22 @@ test("Deve fazer um pedido com cálculo de frete", async function () {
     };
     const output = await placeOrder.execute(input); 
     expect(output.total).toBe(6350);
+});
+
+test("Deve fazer um pedido com código", async function () {
+    const itemRepository = new ItemRepositoryMemory();
+    const orderRepository = new OrderRepositoryMemory();
+    const couponRepository = new CouponRepositoryMemory();
+    const placeOrder = new PlaceOrder(itemRepository, orderRepository, couponRepository);
+    const input = {
+        cpf: "839.435.452-10",
+        orderItems: [
+            { idItem: 4, quantity: 1 },
+            { idItem: 5, quantity: 1 },
+            { idItem: 6, quantity: 3 },
+        ],
+        date: new Date("2023-12-10"),
+    };
+    const output = await placeOrder.execute(input); 
+    expect(output.code).toBe("202300000001");
 });

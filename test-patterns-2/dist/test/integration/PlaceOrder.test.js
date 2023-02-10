@@ -13,6 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const PlaceOrder_1 = __importDefault(require("../../src/application/usecase/PlaceOrder"));
+const PgPromisseConnectionAdapter_1 = __importDefault(require("../../src/infra/database/PgPromisseConnectionAdapter"));
+const itemRepositoryDatabase_1 = __importDefault(require("../../src/infra/repository/database/itemRepositoryDatabase"));
 const CouponRepositoryMemory_1 = __importDefault(require("../../src/infra/repository/memory/CouponRepositoryMemory"));
 const ItemRepositoryMemory_1 = __importDefault(require("../../src/infra/repository/memory/ItemRepositoryMemory"));
 const OrderRepositoryMemory_1 = __importDefault(require("../../src/infra/repository/memory/OrderRepositoryMemory"));
@@ -38,7 +40,8 @@ test("Deve fazer um pedido", function () {
 });
 test("Deve fazer um pedido com cálculo de frete", function () {
     return __awaiter(this, void 0, void 0, function* () {
-        const itemRepository = new ItemRepositoryMemory_1.default();
+        const connection = new PgPromisseConnectionAdapter_1.default();
+        const itemRepository = new itemRepositoryDatabase_1.default(connection);
         const orderRepository = new OrderRepositoryMemory_1.default();
         const couponRepository = new CouponRepositoryMemory_1.default();
         const placeOrder = new PlaceOrder_1.default(itemRepository, orderRepository, couponRepository);
@@ -53,5 +56,24 @@ test("Deve fazer um pedido com cálculo de frete", function () {
         };
         const output = yield placeOrder.execute(input);
         expect(output.total).toBe(6350);
+    });
+});
+test("Deve fazer um pedido com código", function () {
+    return __awaiter(this, void 0, void 0, function* () {
+        const itemRepository = new ItemRepositoryMemory_1.default();
+        const orderRepository = new OrderRepositoryMemory_1.default();
+        const couponRepository = new CouponRepositoryMemory_1.default();
+        const placeOrder = new PlaceOrder_1.default(itemRepository, orderRepository, couponRepository);
+        const input = {
+            cpf: "839.435.452-10",
+            orderItems: [
+                { idItem: 4, quantity: 1 },
+                { idItem: 5, quantity: 1 },
+                { idItem: 6, quantity: 3 },
+            ],
+            date: new Date("2023-12-10"),
+        };
+        const output = yield placeOrder.execute(input);
+        expect(output.code).toBe("202300000001");
     });
 });
