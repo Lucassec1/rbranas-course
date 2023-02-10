@@ -16,8 +16,7 @@ dist-ssr
 /cypress/videos/
 /cypress/screenshots/
 
-coverage
-*.lcov
+/coverage
 
 # Editor directories and files
 .vscode/*
