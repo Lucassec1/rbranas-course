@@ -2,7 +2,7 @@ import Connection from "./Connection";
 import pgp from "pg-promise";
 
 export default class PgPromiseConnectionAdapter implements Connection {
-  pgp: any;
+  	pgp: any;
 	static instance: PgPromiseConnectionAdapter;
 
 	private constructor () {
