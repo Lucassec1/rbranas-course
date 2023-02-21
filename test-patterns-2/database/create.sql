@@ -33,6 +33,7 @@ create table ccca.order (
 	coupon text,
 	code text,
 	cpf text,
+	total numeric,
 	issue_date timestamp,
 	freight numeric,
 	sequence integer,
