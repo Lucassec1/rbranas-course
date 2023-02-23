@@ -1,9 +1,11 @@
 import DefaultFreightCalculator from "../../../domain/entity/DefaultFreightCalculator";
 import Order from "../../../domain/entity/Order";
+import OrderPlaced from "../../../domain/event/OrderPlaced";
 import RepositoryFactory from "../../../domain/factory/RepositoryFactory";
 import CouponRepository from "../../../domain/repository/CouponRepository";
 import ItemRepository from "../../../domain/repository/ItemRepository";
 import OrderRepository from "../../../domain/repository/OrderRepository";
+import Broker from "../../../infra/broker/Broker";
 import PlaceOrderInput from "./PlaceOrderInput";
 import PlaceOrderOutput from "./PlaceOrderOutput";
 
@@ -12,11 +14,10 @@ export default class PlaceOrder {
   couponRepository: CouponRepository;
   orderRepository: OrderRepository;
 
-  constructor(readonly repositoryFactory: RepositoryFactory) {
+  constructor(readonly repositoryFactory: RepositoryFactory, readonly broker: Broker) {
     this.itemRepository = repositoryFactory.createItemRepository();
     this.couponRepository = repositoryFactory.createCouponRepository();
     this.orderRepository = repositoryFactory.createOrderRepository();
-    this.stockEntryRepository = repositoryFactory.createStockEntryRepository();
   }
 
   async execute(input: PlaceOrderInput): Promise<PlaceOrderOutput> {
@@ -37,13 +38,11 @@ export default class PlaceOrder {
       if (coupon) order.addCoupon(coupon);
     }
     await this.orderRepository.save(order);
-
-    for (const orderItem of input.orderItems) {
-      
-    }
-
+    await this.broker.publish(new OrderPlaced(order));
     const total = order.getTotal();
     const output = new PlaceOrderOutput(order.getCode(), total);
     return output;
   }
 }
+
+// ACID - Atomicity (tudo ou nada), Consistency (constraints respeitadas), Isolation (um não interfere no outro), Durability (uma vez comitado está persistido)

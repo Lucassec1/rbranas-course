@@ -1,17 +1,27 @@
+import OrderPlacedStockHandler from "../../../src/application/handler/OrderPlacedStockHandler";
+import GetStock from "../../../src/application/usecase/get_stock/GetStock";
 import PlaceOrder from "../../../src/application/usecase/place_order/PlaceOrder";
+import Broker from "../../../src/infra/broker/Broker";
 import PgPromiseConnectionAdapter from "../../../src/infra/database/PgPromiseConnectionAdapter";
 import DatabaseRepositoryFactory from "../../../src/infra/factory/DatabaseRepositoryFactory";
 import OrderRepositoryDatabase from "../../../src/infra/repository/database/OrderRepositoryDatabase";
+import StockEntryRepositoryDatabase from "../../../src/infra/repository/database/StockEntryRepositoryDatabase";
 
 let placeOrder: PlaceOrder;
+let getStock: GetStock;
 let orderRepository: OrderRepositoryDatabase;
+let stockEntryRepository: StockEntryRepositoryDatabase;
 
 beforeEach(function () {
   const connection = PgPromiseConnectionAdapter.getInstance();
-  orderRepository = new OrderRepositoryDatabase(connection);
-  const repositoryFactory = new DatabaseRepositoryFactory();
-  // const repositoryFactory = new MemoryRepositoryFactory();
-  placeOrder = new PlaceOrder(repositoryFactory);
+	orderRepository = new OrderRepositoryDatabase(connection);
+	stockEntryRepository = new StockEntryRepositoryDatabase(connection);
+	const repositoryFactory = new DatabaseRepositoryFactory();
+	// const repositoryFactory = new MemoryRepositoryFactory();
+  const broker = new Broker();
+  broker.register(new OrderPlacedStockHandler(repositoryFactory));
+  placeOrder = new PlaceOrder(repositoryFactory, broker);
+	getStock = new GetStock(repositoryFactory);
 });
 
 test("Deve fazer um pedido", async function () {
@@ -57,6 +67,26 @@ test("Deve fazer um pedido com código", async function () {
   expect(output.code).toBe("202300000001");
 });
 
+test("Deve fazer um pedido e retirar do estoque", async function () {
+	const input = {
+		cpf: "839.435.452-10",
+		orderItems: [
+			{ idItem: 4, quantity: 1},
+			{ idItem: 5, quantity: 1},
+			{ idItem: 6, quantity: 3}
+		],
+		date: new Date("2023-12-10")
+	};
+	await placeOrder.execute(input);
+	const totala = await getStock.execute(4);
+	const totalb = await getStock.execute(5);
+	const totalc = await getStock.execute(6);
+	expect(totala).toBe(0);
+	expect(totalb).toBe(0);
+	expect(totalc).toBe(0);
+});
+
 afterEach(async function () {
   await orderRepository.clear();
+  await stockEntryRepository.clear();
 });
